@@ -61,6 +61,26 @@ export class TelegramDelivery {
         console.error(`[TelegramDelivery] Failed to send item ${item.id}`, cause);
       }
     }
+    try {
+      await this.sendHeadlines(items);
+    } catch (cause) {
+      console.error('[TelegramDelivery] Failed to send headlines summary', cause);
+    }
+  }
+
+  private async sendHeadlines(items: NewsItem[]): Promise<void> {
+    const lines = items.map(
+      (item, idx) =>
+        `${idx + 1}. <a href="${escapeHtmlAttr(item.url)}">${escapeHtml(item.title)}</a>`,
+    );
+    const text = `📰 <b>Усі новини сьогодні (${items.length}):</b>\n\n${lines.join('\n')}`;
+    await this.bot.telegram.sendMessage(this.chatId, text, {
+      parse_mode: 'HTML',
+      link_preview_options: { is_disabled: true },
+      reply_markup: {
+        inline_keyboard: [[{ text: '🗑 Видалити', callback_data: 'del' }]],
+      },
+    });
   }
 
   private async sendItem(item: NewsItem): Promise<void> {
@@ -95,6 +115,14 @@ function formatMessage(item: NewsItem): string {
 
 function escapeMd(text: string): string {
   return text.replace(/([_*`[\]])/g, '\\$1');
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escapeHtmlAttr(text: string): string {
+  return escapeHtml(text).replace(/"/g, '&quot;');
 }
 
 function timeAgo(date: Date): string {

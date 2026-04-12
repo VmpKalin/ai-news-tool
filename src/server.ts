@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
-import { getState, runOnce } from './runState.js';
+import { getState, getLatestDigest, runOnce } from './runState.js';
 import type { Scheduler, PipelineRunner } from './scheduler.js';
 import { openApiSpec, docsHtml } from './docs.js';
 
@@ -64,7 +64,7 @@ export class HttpServer {
       return this.handleRun(req, res);
     }
     if (method === 'GET' && path === '/digest/latest') {
-      return this.handleLatest(res);
+      return await this.handleLatest(res);
     }
     if (method === 'GET' && path === '/openapi.json') {
       sendJson(res, 200, openApiSpec);
@@ -104,13 +104,13 @@ export class HttpServer {
     sendJson(res, 202, { status: 'ok', digest: result.digest });
   }
 
-  private handleLatest(res: ServerResponse): void {
-    const state = getState();
-    if (!state.latestDigest) {
+  private async handleLatest(res: ServerResponse): Promise<void> {
+    const digest = await getLatestDigest();
+    if (!digest) {
       sendJson(res, 404, { error: 'no_digest_yet' });
       return;
     }
-    sendJson(res, 200, { digest: state.latestDigest, lastRun: state.lastRun });
+    sendJson(res, 200, { digest, lastRun: getState().lastRun });
   }
 
   private checkAuth(req: IncomingMessage, res: ServerResponse): boolean {

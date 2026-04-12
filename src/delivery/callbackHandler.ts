@@ -67,7 +67,7 @@ export class CallbackHandler {
   }
 
   private async handleDeep(ctx: Context, alias: string): Promise<void> {
-    const article = this.store.getByAlias(alias);
+    const article = await this.store.getByAlias(alias);
     if (!article) {
       console.warn(`[CallbackHandler] Article ${alias} not in store`);
       await safeAnswer(ctx, '⚠️ Стаття більше недоступна');
@@ -91,7 +91,7 @@ export class CallbackHandler {
   }
 
   private async handlePost(ctx: Context, alias: string): Promise<void> {
-    const article = this.store.getByAlias(alias);
+    const article = await this.store.getByAlias(alias);
     if (!article) {
       console.warn(`[CallbackHandler] Article ${alias} not in store`);
       await safeAnswer(ctx, '⚠️ Стаття більше недоступна');

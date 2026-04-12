@@ -7,6 +7,12 @@ export interface InoreaderCredentials {
   readonly refreshToken: string;
 }
 
+export interface InoreaderFetchOptions {
+  readonly windowHours: number;
+  readonly maxArticles: number;
+  readonly folders: readonly string[];
+}
+
 interface InoreaderItem {
   id: string;
   title: string;
@@ -30,9 +36,11 @@ interface TokenRefreshResponse {
 
 const BASE_URL = 'https://www.inoreader.com/reader/api/0';
 const TOKEN_URL = 'https://www.inoreader.com/oauth2/token';
-const STREAM_PATH = '/stream/contents/user/-/state/com.google/reading-list';
-const MAX_ARTICLES = 50;
-const SECONDS_PER_DAY = 86400;
+const SECONDS_PER_HOUR = 3600;
+
+function folderStreamPath(folder: string): string {
+  return `/stream/contents/user/-/label/${encodeURIComponent(folder)}`;
+}
 
 export class InoreaderFetcherError extends Error {
   constructor(message: string, public readonly cause?: unknown) {
@@ -46,45 +54,75 @@ export class InoreaderFetcher {
   private refreshToken: string;
   private readonly appId: string;
   private readonly appSecret: string;
+  private readonly windowHours: number;
+  private readonly maxArticles: number;
+  private readonly folders: readonly string[];
 
-  constructor(credentials: InoreaderCredentials) {
+  constructor(credentials: InoreaderCredentials, options: InoreaderFetchOptions) {
+    if (options.folders.length === 0) {
+      throw new Error('InoreaderFetcher requires at least one folder');
+    }
     this.appId = credentials.appId;
     this.appSecret = credentials.appSecret;
     this.accessToken = credentials.accessToken;
     this.refreshToken = credentials.refreshToken;
+    this.windowHours = options.windowHours;
+    this.maxArticles = options.maxArticles;
+    this.folders = options.folders;
   }
 
   async fetch(): Promise<NewsItem[]> {
     try {
-      console.log('[InoreaderFetcher] Fetching articles since 24h ago...');
-      const since = Math.floor(Date.now() / 1000) - SECONDS_PER_DAY;
-      const url = `${BASE_URL}${STREAM_PATH}?n=${MAX_ARTICLES}&ot=${since}&output=json`;
+      const label = this.folders.length === 1 ? 'folder' : 'folders';
+      console.log(
+        `[InoreaderFetcher] Fetching from ${label}: ${this.folders.join(', ')} (last ${this.windowHours}h, max ${this.maxArticles} per folder)`,
+      );
+      const since = Math.floor(Date.now() / 1000) - this.windowHours * SECONDS_PER_HOUR;
 
-      let response = await this.callStream(url);
+      const perFolderResults = await Promise.all(
+        this.folders.map((folder) => this.fetchFolder(folder, since)),
+      );
 
-      if (response.status === 401) {
-        console.log('[InoreaderFetcher] Access token expired, refreshing...');
-        await this.refreshAccessToken();
-        response = await this.callStream(url);
+      const deduped = new Map<string, NewsItem>();
+      for (const items of perFolderResults) {
+        for (const item of items) {
+          if (!deduped.has(item.id)) deduped.set(item.id, item);
+        }
       }
-
-      if (!response.ok) {
-        const body = await response.text();
-        throw new InoreaderFetcherError(
-          `Inoreader API returned ${response.status}: ${body.slice(0, 200)}`,
-        );
-      }
-
-      const data = (await response.json()) as InoreaderStreamResponse;
-      const rawItems = data.items ?? [];
-      console.log(`[InoreaderFetcher] Received ${rawItems.length} articles`);
-
-      return rawItems.map((item) => this.mapToNewsItem(item));
+      const merged = [...deduped.values()];
+      console.log(
+        `[InoreaderFetcher] Received ${merged.length} unique articles across ${this.folders.length} folder(s)`,
+      );
+      return merged;
     } catch (cause) {
       if (cause instanceof InoreaderFetcherError) throw cause;
       console.error('[InoreaderFetcher] Failed to fetch articles', cause);
       throw new InoreaderFetcherError('Failed to fetch Inoreader articles', cause);
     }
+  }
+
+  private async fetchFolder(folder: string, since: number): Promise<NewsItem[]> {
+    const url = `${BASE_URL}${folderStreamPath(folder)}?n=${this.maxArticles}&ot=${since}&output=json`;
+
+    let response = await this.callStream(url);
+
+    if (response.status === 401) {
+      console.log('[InoreaderFetcher] Access token expired, refreshing...');
+      await this.refreshAccessToken();
+      response = await this.callStream(url);
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new InoreaderFetcherError(
+        `Inoreader API returned ${response.status} for folder "${folder}": ${body.slice(0, 200)}`,
+      );
+    }
+
+    const data = (await response.json()) as InoreaderStreamResponse;
+    const rawItems = data.items ?? [];
+    console.log(`[InoreaderFetcher] Folder "${folder}" → ${rawItems.length} articles`);
+    return rawItems.map((item) => this.mapToNewsItem(item));
   }
 
   private async callStream(url: string): Promise<Response> {

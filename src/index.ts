@@ -1,8 +1,9 @@
 import { config } from './config.js';
 import { Scheduler } from './scheduler.js';
 import { HttpServer } from './server.js';
-import { getState } from './runState.js';
+import { getState, loadState } from './runState.js';
 import { ArticleStore } from './store/articleStore.js';
+import { connectRedis, disconnectRedis } from './store/redisClient.js';
 import { ArticleAnalyzer } from './generation/articleAnalyzer.js';
 import { PostGenerator } from './generation/postGenerator.js';
 import { TelegramDelivery } from './delivery/telegram.js';
@@ -11,6 +12,9 @@ import { createPipelineRunner } from './pipeline.js';
 
 async function main(): Promise<void> {
   console.log('[Index] Starting News Digest Bot daemon');
+
+  await connectRedis();
+  await loadState();
 
   const store = new ArticleStore();
   const analyzer = new ArticleAnalyzer(config.anthropicApiKey, config.summaryModel);
@@ -70,6 +74,8 @@ async function main(): Promise<void> {
     } catch (error) {
       console.error('[Index] Error closing server', error);
     }
+
+    await disconnectRedis();
 
     console.log('[Index] Shutdown complete');
     process.exit(0);

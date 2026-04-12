@@ -127,7 +127,9 @@ export class RssFetcher {
 - [x] `data/writingStyle.md` — user-editable voice/style config with sample posts
 - [x] `src/delivery/telegram.ts` — Telegraf v4 bot, 2-row keyboard: [Детальніше][Читати] / [Створити пост][Видалити], uses article alias
 - [x] `src/delivery/callbackHandler.ts` — routes deep/post/del actions, attaches post+del buttons to analyzer reply, del-only on post reply
-- [x] `src/store/articleStore.ts` — SHA-256 truncated alias (12 chars) fits Telegram callback_data 64-byte limit
+- [x] `src/store/articleStore.ts` — Redis-backed async store, save/getByAlias/isAlreadySent/markAsSent, SHA-256 truncated alias
+- [x] `src/store/redisClient.ts` — ioredis v5 singleton with lazy connect, error handler, connectRedis/disconnectRedis helpers
+- [x] `ARCHITECTURE.md` — full architecture doc: components, data flow, lifecycle, mutex, shutdown, trade-offs
 - [x] `src/runState.ts` — in-memory mutex + state (isRunning, lastRun, latestDigest) via `runOnce()`
 - [x] `src/scheduler.ts` — node-cron v4 wrapper with timezone + built-in noOverlap
 - [x] `src/server.ts` — native `node:http` server: `/health`, `POST /digest/run`, `/digest/latest`, `/openapi.json`, `/docs`, optional bearer auth

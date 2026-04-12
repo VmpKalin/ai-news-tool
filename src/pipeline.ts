@@ -21,12 +21,19 @@ export async function runPipeline(deps: PipelineDeps): Promise<string> {
   const pipelineStart = Date.now();
 
   try {
-    const fetcher = new InoreaderFetcher({
-      appId: config.inoreaderAppId,
-      appSecret: config.inoreaderAppSecret,
-      accessToken: config.inoreaderAccessToken,
-      refreshToken: config.inoreaderRefreshToken,
-    });
+    const fetcher = new InoreaderFetcher(
+      {
+        appId: config.inoreaderAppId,
+        appSecret: config.inoreaderAppSecret,
+        accessToken: config.inoreaderAccessToken,
+        refreshToken: config.inoreaderRefreshToken,
+      },
+      {
+        windowHours: config.fetchWindowHours,
+        maxArticles: config.fetchMaxArticles,
+        folders: config.inoreaderFolders,
+      },
+    );
     const embedder = new Embedder(config.voyageApiKey, config.embeddingModel);
     const searcher = new Searcher(config.topK);
     const translator = new ArticleTranslator(config.anthropicApiKey, config.summaryModel);
@@ -36,8 +43,22 @@ export async function runPipeline(deps: PipelineDeps): Promise<string> {
     const rawItems = await fetcher.fetch();
     console.log(`[Pipeline] Step 1 (fetch) done in ${elapsed(step1Start)}s`);
 
+    const dedupStart = Date.now();
+    const sentFlags = await Promise.all(
+      rawItems.map((item) => deps.store.isAlreadySent(item.id)),
+    );
+    const freshItems = rawItems.filter((_, idx) => !sentFlags[idx]);
+    console.log(
+      `[Pipeline] Deduplicated: ${freshItems.length} fresh out of ${rawItems.length} total (${elapsed(dedupStart)}s)`,
+    );
+
+    if (freshItems.length === 0) {
+      console.log('[Pipeline] No new articles, skipping');
+      return 'Немає нових статей за останні 24 години.';
+    }
+
     const step2Start = Date.now();
-    const vectorized = await embedder.embedItems(rawItems);
+    const vectorized = await embedder.embedItems(freshItems);
     console.log(`[Pipeline] Step 2 (embed news) done in ${elapsed(step2Start)}s`);
 
     const step3Start = Date.now();
@@ -57,9 +78,10 @@ export async function runPipeline(deps: PipelineDeps): Promise<string> {
     console.log(`[Pipeline] Step 6 (summarize) done in ${elapsed(step6Start)}s`);
 
     const step7Start = Date.now();
-    deps.store.save(translated);
+    await deps.store.save(translated);
     await deps.telegram.sendDigest(translated);
-    console.log(`[Pipeline] Step 7 (deliver) done in ${elapsed(step7Start)}s`);
+    await deps.store.markManyAsSent(translated.map((item) => item.id));
+    console.log(`[Pipeline] Step 7 (deliver + mark sent) done in ${elapsed(step7Start)}s`);
 
     console.log(`\n[Pipeline] Total time: ${elapsed(pipelineStart)}s\n`);
     console.log('===== DAILY NEWS DIGEST =====\n');

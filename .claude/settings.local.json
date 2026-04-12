@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(claude-api)",
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "WebFetch(domain:docs.voyageai.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -s https://raw.githubusercontent.com/voyage-ai/typescript-sdk/main/src/api/types/EmbedResponse.ts)",
+      "Bash(curl -s https://raw.githubusercontent.com/voyage-ai/typescript-sdk/main/src/api/types/EmbedResponseDataItem.ts)",
+      "Bash(curl -s https://raw.githubusercontent.com/voyage-ai/typescript-sdk/main/src/api/types/EmbedRequest.ts)",
+      "Bash(curl -s \"https://api.github.com/repos/voyage-ai/typescript-sdk/contents/src/api/client/requests\")",
+      "Bash(curl -s \"https://api.github.com/repos/voyage-ai/typescript-sdk/git/trees/main?recursive=1\")",
+      "Bash(curl -s https://raw.githubusercontent.com/voyage-ai/typescript-sdk/main/README.md)"
+    ]
+  }
+}

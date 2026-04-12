@@ -1,0 +1,272 @@
+[
+  {
+    "id": "mock-1",
+    "title": "OpenAI unveils multimodal coding assistant for enterprise workflows",
+    "description": "New assistant integrates code review, issue triage, and repo-wide search, aiming to cut developer handoff time across large engineering teams.",
+    "url": "https://example.com/news/openai-enterprise-coding-assistant",
+    "source": "The Verge",
+    "hoursAgo": 1,
+    "content": "OpenAI introduced a multimodal coding assistant tailored for enterprise software teams. The product combines repository analysis, bug summarization, and design-doc grounding in a single interface."
+  },
+  {
+    "id": "mock-2",
+    "title": "Ukraine targets Russian logistics hub near occupied Melitopol",
+    "description": "Precision strikes reportedly disrupted ammunition transfers and rail operations overnight, according to Ukrainian military sources and local officials.",
+    "url": "https://example.com/news/ukraine-melitopol-logistics-strike",
+    "source": "Reuters",
+    "hoursAgo": 3,
+    "content": "Ukrainian forces carried out coordinated strikes on a logistics hub near occupied Melitopol, affecting rail-linked supply routes used to move ammunition and fuel toward the southern front."
+  },
+  {
+    "id": "mock-3",
+    "title": "Ethereum rebounds above $4,800 on renewed staking demand",
+    "description": "ETH gained sharply after on-chain activity and validator deposits accelerated. Traders cite improving sentiment and stronger ETF-related expectations.",
+    "url": "https://example.com/news/ethereum-4800-staking-demand",
+    "source": "CoinDesk",
+    "hoursAgo": 4,
+    "content": "Ethereum moved above $4,800 as validator inflows and layer-2 usage climbed. Analysts noted that renewed institutional attention and improving risk appetite contributed to the rally."
+  },
+  {
+    "id": "mock-4",
+    "title": "European Commission proposes new cyber resilience standards for cloud providers",
+    "description": "Draft rules would require faster incident disclosure, third-party audit trails, and harmonized security reporting across member states.",
+    "url": "https://example.com/news/eu-cyber-resilience-cloud",
+    "source": "Politico EU",
+    "hoursAgo": 6,
+    "content": "The European Commission published a proposal to tighten cybersecurity obligations for major cloud infrastructure providers, including mandatory incident reporting windows and standardized audit evidence."
+  },
+  {
+    "id": "mock-5",
+    "title": "Germany expands semiconductor subsidies for advanced packaging plants",
+    "description": "Berlin approved a new funding package to support chip packaging and materials capacity, targeting supply-chain resilience inside the EU.",
+    "url": "https://example.com/news/germany-chip-packaging-subsidies",
+    "source": "Handelsblatt",
+    "hoursAgo": 7,
+    "content": "Germany announced additional subsidies for advanced semiconductor packaging projects, hoping to attract suppliers that complement planned wafer and automotive chip production facilities."
+  },
+  {
+    "id": "mock-6",
+    "title": "Meta releases lightweight speech model for on-device assistants",
+    "description": "The model is optimized for phones and wearables, delivering faster transcription and offline voice control with lower battery usage.",
+    "url": "https://example.com/news/meta-on-device-speech-model",
+    "source": "MIT Technology Review",
+    "hoursAgo": 9,
+    "content": "Meta unveiled a compact speech model designed for low-power devices. The company says it improves wake-word responsiveness and multilingual transcription without relying heavily on cloud inference."
+  },
+  {
+    "id": "mock-7",
+    "title": "Poland signs drone procurement framework with domestic manufacturers",
+    "description": "New agreement prioritizes reconnaissance and loitering munitions, with a portion of production reserved for rapid battlefield adaptation.",
+    "url": "https://example.com/news/poland-drone-procurement-framework",
+    "source": "Defense News",
+    "hoursAgo": 10,
+    "content": "Poland finalized a multi-year framework for drone procurement from domestic firms, emphasizing scalable reconnaissance platforms and modular strike systems suitable for rapid iteration."
+  },
+  {
+    "id": "mock-8",
+    "title": "Rust 1.89 adds safer async diagnostics and compile-time improvements",
+    "description": "Latest release sharpens error messages in async code and reduces compile times in large workspace builds, according to maintainers.",
+    "url": "https://example.com/news/rust-189-async-diagnostics",
+    "source": "InfoQ",
+    "hoursAgo": 12,
+    "content": "The Rust team released version 1.89 with improved compiler diagnostics for async lifetimes and measurable performance gains for dependency-heavy workspace builds."
+  },
+  {
+    "id": "mock-9",
+    "title": "NATO reviews Black Sea security posture after naval drone incidents",
+    "description": "Alliance officials discussed maritime surveillance, export route protection, and coordination with regional partners during a closed-door session.",
+    "url": "https://example.com/news/nato-black-sea-security-review",
+    "source": "Financial Times",
+    "hoursAgo": 13,
+    "content": "NATO officials met to assess Black Sea security after recent naval drone incidents raised concerns about shipping routes, coastal defenses, and regional deterrence."
+  },
+  {
+    "id": "mock-10",
+    "title": "Perplexity launches research mode with citation graph and source clustering",
+    "description": "New mode groups related evidence, ranks conflicting claims, and exposes a traceable citation graph for long-form reports.",
+    "url": "https://example.com/news/perplexity-research-mode",
+    "source": "Wired",
+    "hoursAgo": 15,
+    "content": "Perplexity announced a research-oriented mode that clusters sources by topic and exposes citation relationships, aiming to make long-form answers easier to audit."
+  },
+  {
+    "id": "mock-11",
+    "title": "Ukraine and Czech firms agree on artillery shell co-production expansion",
+    "description": "The partnership extends existing industrial cooperation and aims to increase monthly output for NATO-standard munitions.",
+    "url": "https://example.com/news/ukraine-czech-shell-production",
+    "source": "Associated Press",
+    "hoursAgo": 16,
+    "content": "Ukrainian officials signed an expanded artillery co-production agreement with Czech partners to boost output of NATO-caliber shells and reduce supply bottlenecks."
+  },
+  {
+    "id": "mock-12",
+    "title": "Bitcoin miners pivot toward AI inference hosting as margins tighten",
+    "description": "Several public mining firms are repurposing energy-rich sites for inference clusters, seeking steadier cash flow beyond block rewards.",
+    "url": "https://example.com/news/bitcoin-miners-ai-inference",
+    "source": "Bloomberg",
+    "hoursAgo": 18,
+    "content": "Public bitcoin mining companies are increasingly dedicating portions of their data center capacity to AI inference and high-performance workloads as mining economics become more volatile."
+  },
+  {
+    "id": "mock-13",
+    "title": "France backs sovereign AI compute fund for regional startups",
+    "description": "New public-private vehicle will finance GPU access, cloud credits, and model evaluation infrastructure for early-stage AI companies.",
+    "url": "https://example.com/news/france-sovereign-ai-compute-fund",
+    "source": "Les Echos",
+    "hoursAgo": 19,
+    "content": "France launched a sovereign AI compute initiative to help domestic startups access training infrastructure and reduce dependence on non-European cloud providers."
+  },
+  {
+    "id": "mock-14",
+    "title": "Node.js 24 enters LTS with startup performance gains",
+    "description": "The release brings faster module loading, updated web APIs, and improved diagnostics intended for production back-end deployments.",
+    "url": "https://example.com/news/nodejs-24-lts",
+    "source": "GitHub Blog",
+    "hoursAgo": 21,
+    "content": "Node.js 24 reached long-term support status, with core maintainers highlighting lower startup overhead, more complete browser-compatible APIs, and better runtime observability."
+  },
+  {
+    "id": "mock-15",
+    "title": "Baltic states coordinate air-defense procurement roadmap",
+    "description": "Estonia, Latvia, and Lithuania aligned procurement priorities for medium-range systems, interceptor stockpiles, and shared maintenance capacity.",
+    "url": "https://example.com/news/baltic-air-defense-roadmap",
+    "source": "Euractiv",
+    "hoursAgo": 24,
+    "content": "The Baltic states published a coordinated roadmap for air-defense procurement focused on interoperability, shared maintenance, and faster replenishment of missile inventories."
+  },
+  {
+    "id": "mock-16",
+    "title": "Google DeepMind publishes agent benchmark for multi-step tool use",
+    "description": "Benchmark measures planning quality, tool reliability, and recovery from partial failures across long-horizon enterprise tasks.",
+    "url": "https://example.com/news/deepmind-agent-benchmark",
+    "source": "VentureBeat",
+    "hoursAgo": 26,
+    "content": "Google DeepMind introduced a new benchmark for evaluating AI agents on multi-step tool use, including planning consistency and robustness when external tools fail mid-task."
+  },
+  {
+    "id": "mock-17",
+    "title": "Romania opens new ammunition transit corridor for Ukraine aid",
+    "description": "Officials say the route should reduce delivery times and diversify overland logistics for military support shipments.",
+    "url": "https://example.com/news/romania-ammunition-corridor-ukraine",
+    "source": "Reuters",
+    "hoursAgo": 27,
+    "content": "Romania opened an additional overland transit corridor aimed at accelerating movement of military supplies to Ukraine while reducing pressure on existing border infrastructure."
+  },
+  {
+    "id": "mock-18",
+    "title": "Apple previews Xcode assistant for test generation and refactoring",
+    "description": "New tooling helps developers generate unit tests, explain compiler errors, and refactor legacy Swift code inside the IDE.",
+    "url": "https://example.com/news/apple-xcode-assistant",
+    "source": "9to5Mac",
+    "hoursAgo": 29,
+    "content": "Apple previewed an AI-powered assistant for Xcode that can generate tests, suggest refactors, and explain compiler diagnostics directly within development workflows."
+  },
+  {
+    "id": "mock-19",
+    "title": "EU ministers debate stricter sanctions enforcement on dual-use exports",
+    "description": "Talks focused on closing loopholes in transshipment chains and improving customs cooperation across member states.",
+    "url": "https://example.com/news/eu-dual-use-export-sanctions",
+    "source": "Reuters",
+    "hoursAgo": 31,
+    "content": "European ministers discussed new measures to tighten enforcement on dual-use goods exports, emphasizing customs data sharing and penalties for sanctions circumvention."
+  },
+  {
+    "id": "mock-20",
+    "title": "Supabase adds regional failover controls for managed Postgres",
+    "description": "Platform now lets teams define standby priorities and automated failover policies for latency-sensitive production workloads.",
+    "url": "https://example.com/news/supabase-regional-failover",
+    "source": "InfoWorld",
+    "hoursAgo": 33,
+    "content": "Supabase announced new regional failover features for managed Postgres deployments, giving teams more control over disaster recovery behavior and read replica promotion."
+  },
+  {
+    "id": "mock-21",
+    "title": "Ukraine receives new tranche of macro-financial assistance from EU",
+    "description": "Funds will support budget stability, reconstruction priorities, and critical public services amid continued wartime pressure.",
+    "url": "https://example.com/news/ukraine-eu-macro-financial-aid",
+    "source": "Reuters",
+    "hoursAgo": 35,
+    "content": "The European Union disbursed a fresh macro-financial assistance tranche to Ukraine, with officials framing the package as support for fiscal resilience and essential state functions."
+  },
+  {
+    "id": "mock-22",
+    "title": "NVIDIA introduces rack-scale inference platform for sovereign clouds",
+    "description": "The system targets national AI infrastructure projects with secure tenancy, high-bandwidth interconnects, and reference deployment tooling.",
+    "url": "https://example.com/news/nvidia-rack-scale-sovereign-cloud",
+    "source": "CNBC",
+    "hoursAgo": 37,
+    "content": "NVIDIA unveiled a rack-scale inference platform positioned for sovereign cloud deployments, emphasizing secure multi-tenant operation and simplified rollout for government-backed AI clusters."
+  },
+  {
+    "id": "mock-23",
+    "title": "Moldova tightens border screening after sabotage warnings",
+    "description": "Authorities increased inspections and coordination with neighboring states following intelligence about potential cross-border disruption attempts.",
+    "url": "https://example.com/news/moldova-border-screening-sabotage",
+    "source": "Reuters",
+    "hoursAgo": 39,
+    "content": "Moldovan officials strengthened border screening measures and information-sharing arrangements after receiving warnings about potential sabotage and destabilization efforts."
+  },
+  {
+    "id": "mock-24",
+    "title": "JetBrains launches AI code review summaries in TeamCity",
+    "description": "Feature automatically clusters failing checks, highlights probable causes, and drafts reviewer notes for CI pipelines.",
+    "url": "https://example.com/news/jetbrains-teamcity-ai-review",
+    "source": "DevClass",
+    "hoursAgo": 41,
+    "content": "JetBrains added AI-generated code review summaries to TeamCity, aiming to shorten the path from failed CI runs to actionable fixes for engineering teams."
+  },
+  {
+    "id": "mock-25",
+    "title": "Turkey and Ukraine discuss expanded Black Sea industrial cooperation",
+    "description": "Talks included ship repair capacity, drone components, and joint manufacturing opportunities for maritime systems.",
+    "url": "https://example.com/news/turkey-ukraine-industrial-cooperation",
+    "source": "Anadolu Agency",
+    "hoursAgo": 43,
+    "content": "Officials from Turkey and Ukraine held talks on expanding industrial cooperation in maritime systems, including maintenance infrastructure and component production."
+  },
+  {
+    "id": "mock-26",
+    "title": "PostgreSQL 19 beta improves logical replication conflict handling",
+    "description": "Database release candidates introduce better observability and more granular controls for replicated write conflicts in distributed setups.",
+    "url": "https://example.com/news/postgresql-19-beta-replication",
+    "source": "The New Stack",
+    "hoursAgo": 45,
+    "content": "The PostgreSQL community published a beta for version 19 featuring improvements to logical replication conflict handling, metrics visibility, and operator control in multi-node environments."
+  },
+  {
+    "id": "mock-27",
+    "title": "Lithuania accelerates fortification plan near Belarus border",
+    "description": "Defense ministry cites regional risk assessments and says engineering works will prioritize anti-vehicle obstacles and protected positions.",
+    "url": "https://example.com/news/lithuania-border-fortification",
+    "source": "Reuters",
+    "hoursAgo": 47,
+    "content": "Lithuania accelerated elements of its border fortification program, focusing on mobility denial measures and defensive positions near key access routes."
+  },
+  {
+    "id": "mock-28",
+    "title": "Open-source vector database startup raises Series B for hybrid search",
+    "description": "Funding will be used to scale enterprise features, managed hosting, and cross-modal retrieval for production AI applications.",
+    "url": "https://example.com/news/vector-db-series-b-hybrid-search",
+    "source": "Tech.eu",
+    "hoursAgo": 50,
+    "content": "An open-source vector database company closed a Series B round to expand its hybrid search platform, with new investment aimed at enterprise deployments and multimodal retrieval."
+  },
+  {
+    "id": "mock-29",
+    "title": "UK unveils defense tech fast-track for battlefield software updates",
+    "description": "Program is intended to shorten approval cycles for mission software, autonomy modules, and sensor integration patches.",
+    "url": "https://example.com/news/uk-defense-tech-fast-track",
+    "source": "Breaking Defense",
+    "hoursAgo": 53,
+    "content": "The UK announced a fast-track acquisition and approval program for battlefield software updates, seeking to reduce deployment delays for mission-critical digital systems."
+  },
+  {
+    "id": "mock-30",
+    "title": "Anthropic researchers publish study on controllable reasoning budgets",
+    "description": "Paper explores methods for constraining token use while preserving answer quality in coding and analytical tasks.",
+    "url": "https://example.com/news/anthropic-reasoning-budgets-study",
+    "source": "arXiv Digest",
+    "hoursAgo": 56,
+    "content": "Anthropic researchers released a study on controllable reasoning budgets, showing how models can adapt deliberation depth to task complexity while keeping latency predictable."
+  }
+]

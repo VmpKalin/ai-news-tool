@@ -3,10 +3,12 @@ import { config } from '../config.js';
 const MAX_DESCRIPTION_CHARS = 3800;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 20;
+const DEDUP_WINDOW_MS = 60_000;
 const DISCORD_RED = 0xe74c3c;
 
 const webhookUrl = config.discordWebhookUrl;
 const recentTimestamps: number[] = [];
+const recentMessageHashes = new Map<string, number>();
 let installed = false;
 
 export function initErrorReporter(): void {
@@ -38,6 +40,7 @@ export function initErrorReporter(): void {
 
 async function sendToDiscord(text: string): Promise<void> {
   if (!webhookUrl) return;
+  if (isDuplicate(text)) return;
   if (!checkRateLimit()) return;
 
   const truncated = truncate(text, MAX_DESCRIPTION_CHARS);
@@ -79,6 +82,22 @@ function checkRateLimit(): boolean {
   }
   recentTimestamps.push(now);
   return true;
+}
+
+function isDuplicate(text: string): boolean {
+  const now = Date.now();
+  for (const [hash, ts] of recentMessageHashes) {
+    if (now - ts > DEDUP_WINDOW_MS) recentMessageHashes.delete(hash);
+  }
+  const fingerprint = hashMessage(text);
+  if (recentMessageHashes.has(fingerprint)) return true;
+  recentMessageHashes.set(fingerprint, now);
+  return false;
+}
+
+function hashMessage(text: string): string {
+  const normalized = text.slice(0, 500).replace(/\s+/g, ' ').trim();
+  return normalized;
 }
 
 function formatArg(arg: unknown): string {

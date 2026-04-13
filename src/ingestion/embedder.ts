@@ -1,5 +1,17 @@
-import { VoyageAIClient } from 'voyageai';
 import type { NewsItem, NewsItemWithVector } from '../models/NewsItem.js';
+
+const VOYAGE_API_URL = 'https://api.voyageai.com/v1/embeddings';
+
+interface VoyageEmbedding {
+  embedding?: number[];
+  index?: number;
+}
+
+interface VoyageEmbeddingsResponse {
+  data?: VoyageEmbedding[];
+  model?: string;
+  usage?: { total_tokens?: number };
+}
 
 export class EmbedderError extends Error {
   constructor(message: string, public readonly cause?: unknown) {
@@ -9,11 +21,11 @@ export class EmbedderError extends Error {
 }
 
 export class Embedder {
-  private readonly client: VoyageAIClient;
+  private readonly apiKey: string;
   private readonly model: string;
 
   constructor(apiKey: string, model: string) {
-    this.client = new VoyageAIClient({ apiKey });
+    this.apiKey = apiKey;
     this.model = model;
   }
 
@@ -24,6 +36,7 @@ export class Embedder {
       const vectors = await this.embedBatch(inputs, 'document');
       return items.map((item, idx) => ({ ...item, vector: vectors[idx]! }));
     } catch (cause) {
+      if (cause instanceof EmbedderError) throw cause;
       console.error('[Embedder] Failed to embed items', cause);
       throw new EmbedderError('Failed to embed news items', cause);
     }
@@ -48,13 +61,29 @@ export class Embedder {
     inputs: string[],
     inputType: 'document' | 'query',
   ): Promise<number[][]> {
-    const response = await this.client.embed({
-      input: inputs,
-      model: this.model,
-      inputType,
+    const response = await fetch(VOYAGE_API_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: this.model,
+        input: inputs,
+        input_type: inputType,
+      }),
     });
 
-    const data = response.data;
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => '');
+      throw new EmbedderError(
+        `Voyage API returned ${response.status}: ${errorBody.slice(0, 200)}`,
+      );
+    }
+
+    const parsed = (await response.json()) as VoyageEmbeddingsResponse;
+    const data = parsed.data;
+
     if (!data || data.length !== inputs.length) {
       throw new EmbedderError(
         `Voyage returned ${data?.length ?? 0} embeddings for ${inputs.length} inputs`,

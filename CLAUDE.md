@@ -130,6 +130,10 @@ export class RssFetcher {
 - [x] `src/store/articleStore.ts` — Redis-backed async store, save/getByAlias/isAlreadySent/markAsSent, SHA-256 truncated alias
 - [x] `src/store/redisClient.ts` — ioredis v5 singleton with lazy connect, error handler, connectRedis/disconnectRedis helpers
 - [x] `ARCHITECTURE.md` — full architecture doc: components, data flow, lifecycle, mutex, shutdown, trade-offs
+- [x] `README.md` — English project overview: features, quick start with Docker, env vars, HTTP API, Telegram interaction, project structure, tech stack
+- [x] `Dockerfile` — multi-stage Alpine build, non-root user, tini as PID 1
+- [x] `.dockerignore` — excludes node_modules, dist, .env, .git, dev tooling from build context
+- [x] `docker-compose.yml` — full stack: app service + redis + redisinsight, with healthchecks and data volume mount
 - [x] `src/runState.ts` — in-memory mutex + state (isRunning, lastRun, latestDigest) via `runOnce()`
 - [x] `src/scheduler.ts` — node-cron v4 wrapper with timezone + built-in noOverlap
 - [x] `src/server.ts` — native `node:http` server: `/health`, `POST /digest/run`, `/digest/latest`, `/openapi.json`, `/docs`, optional bearer auth

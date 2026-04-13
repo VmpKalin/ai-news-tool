@@ -37,6 +37,9 @@ interface TokenRefreshResponse {
 const BASE_URL = 'https://www.inoreader.com/reader/api/0';
 const TOKEN_URL = 'https://www.inoreader.com/oauth2/token';
 const SECONDS_PER_HOUR = 3600;
+const MAX_TITLE_CHARS = 200;
+const MAX_DESCRIPTION_CHARS = 600;
+const MAX_CONTENT_CHARS = 4000;
 
 function folderStreamPath(folder: string): string {
   return `/stream/contents/user/-/label/${encodeURIComponent(folder)}`;
@@ -170,16 +173,69 @@ export class InoreaderFetcher {
   }
 
   private mapToNewsItem(item: InoreaderItem): NewsItem {
+    const summary = cleanFeedNoise(stripHtml(item.summary?.content ?? ''));
+    const fullContent = cleanFeedNoise(stripHtml(item.content?.content ?? ''));
+    const description = pickBestDescription(summary, fullContent);
+
     return {
       id: item.id,
-      title: item.title,
-      description: stripHtml(item.summary?.content ?? ''),
+      title: truncate(item.title, MAX_TITLE_CHARS),
+      description: truncate(description, MAX_DESCRIPTION_CHARS),
       url: item.canonical?.[0]?.href ?? '',
       source: item.origin?.title ?? 'Unknown',
       publishedAt: new Date(item.published * 1000),
-      content: stripHtml(item.content?.content ?? ''),
+      content: truncate(fullContent, MAX_CONTENT_CHARS),
     };
   }
+}
+
+function cleanFeedNoise(text: string): string {
+  if (text.length === 0) return text;
+  let cleaned = text;
+
+  cleaned = cleaned.replace(
+    /(?:Таймкоди|Тайм-коди|Timecodes?|Time stamps?|Chapters?)[\s\S]*$/i,
+    '',
+  );
+
+  cleaned = cleaned.replace(
+    /(?:\s\d{1,2}:\d{2}\s+[^\d:][^\d:]{2,80}){3,}/g,
+    ' ',
+  );
+
+  return cleaned.replace(/\s+/g, ' ').trim();
+}
+
+function pickBestDescription(summary: string, content: string): string {
+  if (isFeedMetadataOnly(summary)) {
+    return content || '';
+  }
+  if (summary.length < 100 && content.length > summary.length * 1.5) {
+    return content;
+  }
+  return summary || content;
+}
+
+function isFeedMetadataOnly(text: string): boolean {
+  if (text.length === 0) return true;
+  const stripped = text
+    .replace(/submitted by \/u\/\S+/gi, '')
+    .replace(/\[link\]/gi, '')
+    .replace(/\[comments\]/gi, '')
+    .replace(/Article URL:\s*\S+/gi, '')
+    .replace(/Comments URL:\s*\S+/gi, '')
+    .replace(/Points:\s*\d+/gi, '')
+    .replace(/#\s*Comments:\s*\d+/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return stripped.length < 30;
+}
+
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cutAt = text.lastIndexOf(' ', max - 1);
+  const cutPoint = cutAt > max * 0.6 ? cutAt : max - 1;
+  return text.slice(0, cutPoint).trimEnd() + '…';
 }
 
 function stripHtml(html: string): string {

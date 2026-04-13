@@ -1,4 +1,5 @@
 import { config } from './config.js';
+import { initErrorReporter } from './observability/errorReporter.js';
 import { Scheduler } from './scheduler.js';
 import { HttpServer } from './server.js';
 import { getState, loadState } from './runState.js';
@@ -11,6 +12,7 @@ import { CallbackHandler } from './delivery/callbackHandler.js';
 import { createPipelineRunner } from './pipeline.js';
 
 async function main(): Promise<void> {
+  initErrorReporter();
   console.log('[Index] Starting News Digest Bot daemon');
 
   await connectRedis();

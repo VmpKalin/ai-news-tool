@@ -53,7 +53,7 @@ export class ArticleTranslator {
       const userMessage = `Title: ${item.title}\n\nDescription: ${item.description}`;
       const response = await this.client.messages.create({
         model: this.model,
-        max_tokens: 1024,
+        max_tokens: 2048,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userMessage }],
       });
@@ -79,10 +79,27 @@ export class ArticleTranslator {
 }
 
 function parseTranslation(text: string): TranslationPayload | null {
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) return null;
+  const cleaned = stripCodeFence(text.trim());
+
+  const direct = tryParse(cleaned);
+  if (direct) return direct;
+
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  if (match) {
+    const fromRegex = tryParse(match[0]);
+    if (fromRegex) return fromRegex;
+  }
+
+  return null;
+}
+
+function stripCodeFence(text: string): string {
+  return text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
+}
+
+function tryParse(candidate: string): TranslationPayload | null {
   try {
-    const raw: unknown = JSON.parse(match[0]);
+    const raw: unknown = JSON.parse(candidate);
     if (
       typeof raw === 'object' &&
       raw !== null &&

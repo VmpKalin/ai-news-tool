@@ -20,6 +20,7 @@ export interface AppConfig {
   readonly fetchWindowHours: number;
   readonly fetchMaxArticles: number;
   readonly inoreaderFolders: readonly string[];
+  readonly discordWebhookUrl: string | null;
 }
 
 function requireEnv(name: string): string {
@@ -77,4 +78,5 @@ export const config: AppConfig = {
   fetchWindowHours: optionalIntEnv('FETCH_WINDOW_HOURS', 24, 1),
   fetchMaxArticles: optionalIntEnv('FETCH_MAX_ARTICLES', 50, 1),
   inoreaderFolders: optionalListEnv('INOREADER_FOLDERS', ['AI']),
+  discordWebhookUrl: process.env.DISCORD_WEBHOOK_URL?.trim() || null,
 };

@@ -107,10 +107,11 @@ export class TelegramDelivery {
 
 function formatMessage(item: NewsItem): string {
   const title = escapeMd(item.title);
-  const description = escapeMd(item.description);
   const source = escapeMd(item.source);
   const ago = timeAgo(item.publishedAt);
-  return `🗞 *${title}*\n\n${description}\n\n📌 ${source} · ${ago}`;
+  const trimmedDescription = item.description.trim();
+  const body = trimmedDescription ? `\n\n${escapeMd(trimmedDescription)}` : '';
+  return `🗞 *${title}*${body}\n\n📌 ${source} · ${ago}`;
 }
 
 function escapeMd(text: string): string {

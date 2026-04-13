@@ -39,6 +39,7 @@ async function main(): Promise<void> {
   });
 
   await telegram.launch();
+  telegram.registerCommands(runner, () => scheduler.getNextRun());
   scheduler.start();
   await server.start();
 

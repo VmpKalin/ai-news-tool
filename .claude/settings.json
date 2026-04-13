@@ -1,22 +1,6 @@
 {
-  "autoApprove": [
-    "read",
-    "write",
-    "edit",
-    "create",
-    "bash(npm *)",
-    "bash(npx *)",
-    "bash(node *)",
-    "bash(tsc *)",
-    "bash(cat *)",
-    "bash(ls *)",
-    "bash(mkdir *)",
-    "bash(cp *)",
-    "bash(mv *)"
-  ],
   "autoApproveReads": true,
   "model": "claude-opus-4-6",
-  // --dangerously-skip-permissions is not recommended, but you can use it to skip permissions checks entirely.
   "permissions": {
     "allow": [
       "Bash(*)",

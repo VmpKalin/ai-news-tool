@@ -2,6 +2,8 @@ import { Telegraf } from 'telegraf';
 import type { NewsItem } from '../models/NewsItem.js';
 import { CallbackHandler } from './callbackHandler.js';
 import { articleAlias } from '../store/articleStore.js';
+import { runOnce, getState } from '../runState.js';
+import type { PipelineRunner } from '../scheduler.js';
 
 export class TelegramDeliveryError extends Error {
   constructor(message: string, public readonly cause?: unknown) {
@@ -46,6 +48,41 @@ export class TelegramDelivery {
     } catch (cause) {
       console.error('[TelegramDelivery] Error while stopping bot', cause);
     }
+  }
+
+  registerCommands(runner: PipelineRunner, getNextRun?: () => Date | null): void {
+    this.bot.command('updates', async (ctx) => {
+      if (String(ctx.chat.id) !== this.chatId) return;
+      await ctx.reply('⏳ Запускаю дайджест, зачекай...');
+      const result = await runOnce(runner);
+      if (result.status === 'ok') {
+        await ctx.reply('✅ Готово!');
+      } else if (result.status === 'already_running') {
+        await ctx.reply('⏳ Дайджест вже виконується, зачекай...');
+      } else {
+        await ctx.reply(`❌ Помилка: ${result.error}`);
+      }
+    });
+
+    this.bot.command('status', async (ctx) => {
+      if (String(ctx.chat.id) !== this.chatId) return;
+      const state = getState();
+      const running = state.isRunning ? 'так' : 'ні';
+      const lastRun = state.lastRun?.finishedAt ?? 'ніколи';
+      const nextRun = getNextRun?.()?.toISOString() ?? 'невідомо';
+      await ctx.reply(
+        `📊 Статус:\n• Виконується: ${running}\n• Останній запуск: ${lastRun}\n• Наступний запуск: ${nextRun}`,
+      );
+    });
+
+    this.bot.command('help', async (ctx) => {
+      if (String(ctx.chat.id) !== this.chatId) return;
+      await ctx.reply(
+        '📋 Команди:\n/updates — запустити дайджест вручну\n/status — показати поточний стан\n/help — показати цю довідку',
+      );
+    });
+
+    console.log('[TelegramDelivery] Commands registered: /updates /status /help');
   }
 
   async sendDigest(items: NewsItem[]): Promise<void> {

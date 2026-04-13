@@ -69,7 +69,7 @@ export const config: AppConfig = {
   inoreaderAccessToken: requireEnv('INOREADER_ACCESS_TOKEN'),
   inoreaderRefreshToken: requireEnv('INOREADER_REFRESH_TOKEN'),
   port: parseInt(optionalEnv('PORT', '3000'), 10),
-  cronSchedule: optionalEnv('CRON_SCHEDULE', '0 8 * * *'),
+  cronSchedule: optionalEnv('CRON_SCHEDULE', '0 8,12,15,18,22 * * *'),
   timezone: optionalEnv('TZ', 'Europe/Kyiv'),
   triggerToken: process.env.TRIGGER_TOKEN?.trim() || null,
   telegramBotToken: requireEnv('TELEGRAM_BOT_TOKEN'),

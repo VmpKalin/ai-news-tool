@@ -13,6 +13,11 @@ export interface InoreaderFetchOptions {
   readonly folders: readonly string[];
 }
 
+export interface FetchOverrides {
+  readonly windowHours?: number;
+  readonly maxArticles?: number;
+}
+
 interface InoreaderItem {
   id: string;
   title: string;
@@ -74,16 +79,18 @@ export class InoreaderFetcher {
     this.folders = options.folders;
   }
 
-  async fetch(): Promise<NewsItem[]> {
+  async fetch(overrides: FetchOverrides = {}): Promise<NewsItem[]> {
     try {
+      const windowHours = overrides.windowHours ?? this.windowHours;
+      const maxArticles = overrides.maxArticles ?? this.maxArticles;
       const label = this.folders.length === 1 ? 'folder' : 'folders';
       console.log(
-        `[InoreaderFetcher] Fetching from ${label}: ${this.folders.join(', ')} (last ${this.windowHours}h, max ${this.maxArticles} per folder)`,
+        `[InoreaderFetcher] Fetching from ${label}: ${this.folders.join(', ')} (last ${windowHours}h, max ${maxArticles} per folder)`,
       );
-      const since = Math.floor(Date.now() / 1000) - this.windowHours * SECONDS_PER_HOUR;
+      const since = Math.floor(Date.now() / 1000) - windowHours * SECONDS_PER_HOUR;
 
       const perFolderResults = await Promise.all(
-        this.folders.map((folder) => this.fetchFolder(folder, since)),
+        this.folders.map((folder) => this.fetchFolder(folder, since, maxArticles)),
       );
 
       const deduped = new Map<string, NewsItem>();
@@ -104,8 +111,8 @@ export class InoreaderFetcher {
     }
   }
 
-  private async fetchFolder(folder: string, since: number): Promise<NewsItem[]> {
-    const url = `${BASE_URL}${folderStreamPath(folder)}?n=${this.maxArticles}&ot=${since}&output=json`;
+  private async fetchFolder(folder: string, since: number, maxArticles: number): Promise<NewsItem[]> {
+    const url = `${BASE_URL}${folderStreamPath(folder)}?n=${maxArticles}&ot=${since}&output=json`;
 
     let response = await this.callStream(url);
 

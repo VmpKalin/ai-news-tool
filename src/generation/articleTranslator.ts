@@ -1,16 +1,16 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { NewsItem } from '../models/NewsItem.js';
 
-const SYSTEM_PROMPT = `Ти професійний перекладач новин. Переклади заголовок та опис статті українською мовою.
+const SYSTEM_PROMPT = `You are a professional news translator. Translate the article title and description into Ukrainian.
 
-Правила:
-- Зберігай фактологію і цифри
-- Пиши природною українською, без калькування з англійської
-- Назви компаній та брендів залишай без перекладу (Apple, OpenAI, NATO)
-- Власні імена транслітеруй українською
-- Якщо оригінал вже українською — поверни як є
+Rules:
+- Preserve all facts and numbers
+- Write in natural Ukrainian, no calques from English
+- Keep company and brand names untranslated (Apple, OpenAI, NATO)
+- Transliterate proper names into Ukrainian
+- If the original is already in Ukrainian, return as-is
 
-Поверни ТІЛЬКИ JSON об'єкт, без коментарів до чи після. Формат:
+Return ONLY a JSON object, no comments before or after. Format:
 {"title": "...", "description": "..."}`;
 
 interface TranslationPayload {

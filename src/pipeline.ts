@@ -1,10 +1,12 @@
 import { config } from './config.js';
 import { InoreaderFetcher } from './ingestion/inoreaderFetcher.js';
+import { ArticleValidator } from './ingestion/articleValidator.js';
 import { Embedder } from './ingestion/embedder.js';
 import { Searcher } from './retrieval/searcher.js';
 import { getUserProfileEmbedding } from './retrieval/userProfile.js';
 import { Summarizer } from './generation/summarizer.js';
 import { ArticleTranslator } from './generation/articleTranslator.js';
+import type { NewsItem } from './models/NewsItem.js';
 import type { ArticleStore } from './store/articleStore.js';
 import type { TelegramDelivery } from './delivery/telegram.js';
 
@@ -12,6 +14,8 @@ export interface PipelineDeps {
   readonly store: ArticleStore;
   readonly telegram: TelegramDelivery;
 }
+
+const FETCH_ATTEMPTS = 2;
 
 export function createPipelineRunner(deps: PipelineDeps): () => Promise<string> {
   return () => runPipeline(deps);
@@ -34,31 +38,23 @@ export async function runPipeline(deps: PipelineDeps): Promise<string> {
         folders: config.inoreaderFolders,
       },
     );
+    const validator = new ArticleValidator();
     const embedder = new Embedder(config.voyageApiKey, config.embeddingModel);
     const searcher = new Searcher(config.topK);
     const translator = new ArticleTranslator(config.anthropicApiKey, config.summaryModel);
     const summarizer = new Summarizer(config.anthropicApiKey, config.summaryModel);
 
     const step1Start = Date.now();
-    const rawItems = await fetcher.fetch();
-    console.log(`[Pipeline] Step 1 (fetch) done in ${elapsed(step1Start)}s`);
+    const validItems = await fetchAndValidateWithRetry(fetcher, validator, deps.store);
+    console.log(`[Pipeline] Step 1 (fetch + validate) done in ${elapsed(step1Start)}s`);
 
-    const dedupStart = Date.now();
-    const sentFlags = await Promise.all(
-      rawItems.map((item) => deps.store.isAlreadySent(item.id)),
-    );
-    const freshItems = rawItems.filter((_, idx) => !sentFlags[idx]);
-    console.log(
-      `[Pipeline] Deduplicated: ${freshItems.length} fresh out of ${rawItems.length} total (${elapsed(dedupStart)}s)`,
-    );
-
-    if (freshItems.length === 0) {
-      console.log('[Pipeline] No new articles, skipping');
+    if (validItems.length === 0) {
+      console.log('[Pipeline] No valid articles after filtering, skipping');
       return 'Немає нових статей за останні 24 години.';
     }
 
     const step2Start = Date.now();
-    const vectorized = await embedder.embedItems(freshItems);
+    const vectorized = await embedder.embedItems(validItems);
     console.log(`[Pipeline] Step 2 (embed news) done in ${elapsed(step2Start)}s`);
 
     const step3Start = Date.now();
@@ -92,6 +88,57 @@ export async function runPipeline(deps: PipelineDeps): Promise<string> {
     console.error(`[Pipeline] Failed after ${elapsed(pipelineStart)}s`, cause);
     throw cause;
   }
+}
+
+async function fetchAndValidateWithRetry(
+  fetcher: InoreaderFetcher,
+  validator: ArticleValidator,
+  store: ArticleStore,
+): Promise<NewsItem[]> {
+  const allSeen = new Map<string, NewsItem>();
+  let validItems: NewsItem[] = [];
+
+  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
+    const fetched = await fetcher.fetch({
+      windowHours: config.fetchWindowHours * attempt,
+      maxArticles: config.fetchMaxArticles * attempt,
+    });
+
+    for (const item of fetched) {
+      if (!allSeen.has(item.id)) allSeen.set(item.id, item);
+    }
+
+    const fresh = await filterAlreadySent([...allSeen.values()], store);
+    const { valid } = validator.filter(fresh);
+    validItems = valid;
+
+    console.log(
+      `[Pipeline] Attempt ${attempt}: fetched=${fetched.length}, accumulated=${allSeen.size}, fresh=${fresh.length}, valid=${valid.length}`,
+    );
+
+    if (validItems.length >= config.topK) return validItems;
+
+    if (attempt < FETCH_ATTEMPTS) {
+      console.warn(
+        `[Pipeline] Only ${validItems.length} valid < TOP_K=${config.topK}. Retrying with widened window.`,
+      );
+    }
+  }
+
+  if (validItems.length === 0) {
+    console.warn('[Pipeline] No valid articles after all fetch attempts');
+  } else if (validItems.length < config.topK) {
+    console.warn(
+      `[Pipeline] Still fewer than TOP_K after ${FETCH_ATTEMPTS} attempts: delivering ${validItems.length} articles.`,
+    );
+  }
+
+  return validItems;
+}
+
+async function filterAlreadySent(items: NewsItem[], store: ArticleStore): Promise<NewsItem[]> {
+  const flags = await Promise.all(items.map((item) => store.isAlreadySent(item.id)));
+  return items.filter((_, idx) => !flags[idx]);
 }
 
 function elapsed(startMs: number): string {

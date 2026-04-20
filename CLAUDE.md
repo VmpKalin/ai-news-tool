@@ -139,4 +139,7 @@ export class RssFetcher {
 - [x] `src/server.ts` — native `node:http` server: `/health`, `POST /digest/run`, `/digest/latest`, `/openapi.json`, `/docs`, optional bearer auth
 - [x] `src/docs.ts` — OpenAPI 3.0.3 spec as const object + Scalar API Reference HTML (via CDN)
 - [x] `src/index.ts` — daemon entry point: starts scheduler + server, handles SIGTERM/SIGINT graceful shutdown
+- [x] `src/ingestion/articleValidator.ts` — filters invalid articles (Medium teasers, Reddit metadata, timecodes-only, empty/short descriptions) with aggregated stats
+- [x] `src/ingestion/inoreaderFetcher.ts` — added optional `{ windowHours, maxArticles }` overrides to fetch() for retry logic
+- [x] `src/pipeline.ts` — new validate step after dedup + `fetchAndValidateWithRetry` helper with up to 2x fetch attempts with widened window if < TOP_K
 - [x] `npm run build` — compiles cleanly, no type errors

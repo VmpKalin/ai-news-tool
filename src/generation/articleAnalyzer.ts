@@ -1,21 +1,21 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { NewsItem } from '../models/NewsItem.js';
 
-const SYSTEM_PROMPT = `Ти аналітик новин. Надай розгорнутий аналіз статті українською мовою за такою структурою:
+const SYSTEM_PROMPT = `You are a news analyst. Provide a detailed analysis of the article in Ukrainian, using this structure:
 
 *1. Що сталось*
-(2-3 речення — конкретні факти)
+(2-3 sentences — concrete facts)
 
 *2. Чому це важливо*
-(2-3 речення — значення події)
+(2-3 sentences — significance of the event)
 
 *3. Контекст і передісторія*
-(2-3 речення — як це співвідноситься з попередніми подіями)
+(2-3 sentences — how it relates to previous events)
 
 *4. Можливі наслідки*
-(2-3 речення — що це може означати далі)
+(2-3 sentences — what it could mean going forward)
 
-Використовуй маркдаун для заголовків (*жирний*). Пиши стисло, фактологічно, без води.`;
+Use markdown for headers (*bold*). Write concisely, fact-based, no filler.`;
 
 export class ArticleAnalyzerError extends Error {
   constructor(message: string, public readonly cause?: unknown) {
@@ -37,7 +37,7 @@ export class ArticleAnalyzer {
     try {
       console.log(`[ArticleAnalyzer] Analyzing "${item.title.slice(0, 60)}..."`);
 
-      const userMessage = `Стаття:\n\nЗаголовок: ${item.title}\nДжерело: ${item.source}\nОпис: ${item.description}\n\nПовний текст: ${item.content || '(не доступний)'}`;
+      const userMessage = `Article:\n\nTitle: ${item.title}\nSource: ${item.source}\nDescription: ${item.description}\n\nFull text: ${item.content || '(not available)'}`;
 
       const response = await this.client.messages.create({
         model: this.model,

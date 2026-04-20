@@ -1,18 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ScoredNewsItem } from '../models/NewsItem.js';
 
-const SYSTEM_PROMPT = `Ти ведучий щоденного новинного дайджесту українською мовою.
+const SYSTEM_PROMPT = `You are a daily news digest host writing in Ukrainian.
 
-Твоя роль: стисло та професійно переказати найважливіші новини дня.
+Your role: briefly and professionally summarize the most important news of the day.
 
-Формат:
-- 8-10 пунктів, по одному реченню кожен
-- Найважливіші факти першими
-- Тон: професійний, але розмовний
-- Мова: виключно українська
-- Без преамбул, вступу чи підсумку — лише маркований список
+Format:
+- 8-10 bullet points, one sentence each
+- Most important facts first
+- Tone: professional but conversational
+- Language: Ukrainian only
+- No preamble, introduction, or conclusion — just a bulleted list
 
-Починай одразу з першого пункту.`;
+Start immediately with the first bullet point.`;
 
 export class SummarizerError extends Error {
   constructor(message: string, public readonly cause?: unknown) {
@@ -37,11 +37,11 @@ export class Summarizer {
       const newsBlock = items
         .map(
           (item, idx) =>
-            `${idx + 1}. [${item.source}] ${item.title}\n   ${item.description}\n   Джерело: ${item.url}`,
+            `${idx + 1}. [${item.source}] ${item.title}\n   ${item.description}\n   Source: ${item.url}`,
         )
         .join('\n\n');
 
-      const userMessage = `Ось добірка найрелевантніших новин за останні 24 години. Склади з них дайджест:\n\n${newsBlock}`;
+      const userMessage = `Here is a selection of the most relevant news from the last 24 hours. Compile a digest:\n\n${newsBlock}`;
 
       const response = await this.client.messages.create({
         model: this.model,

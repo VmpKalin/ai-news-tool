@@ -6,24 +6,24 @@ import type { NewsItem } from '../models/NewsItem.js';
 const STYLE_PATH = resolve(process.cwd(), 'data/writingStyle.md');
 
 const DEFAULT_STYLE =
-  'Тон: неформальний, прямий, розмовний, аналітичний, місцями жорсткий, але без пафосу і без кліше. Стиль: живий текст, ніби людина думає вголос і говорить по суті, без води, без штучної "красивості", з акцентом на реальні спостереження, особисту позицію і зміст. Структура: 2–3 короткі абзаци або короткі смислові блоки, прості формулювання, чіткі думки, природні переходи, допускається легка емоційність і категоричність. Уникати канцеляризмів, надмірної мотиваційності, рекламного тону і шаблонних фраз. Мова: українська.';
+  'Tone: informal, direct, conversational, analytical, occasionally blunt but without pathos or clichés. Style: lively text, as if a person is thinking out loud and getting to the point — no filler, no artificial polish, focused on real observations, personal stance, and substance. Structure: 2-3 short paragraphs or compact semantic blocks, simple phrasing, clear thoughts, natural transitions, light emotionality and boldness allowed. Avoid bureaucratic language, excessive motivation, promotional tone, and formulaic phrases. Language: Ukrainian.';
 
 function buildSystemPrompt(style: string): string {
-  return `Ти допомагаєш користувачу писати пости в його особистому стилі для соцмережі. На вхід отримуєш новину, на виході — готовий пост від першої особи, ніби користувач щойно побачив цю новину і ділиться думкою.
+  return `You help the user write social media posts in their personal style. You receive a news article as input and produce a ready-to-publish first-person post, as if the user just saw this news and is sharing their take.
 
-Нижче — опис стилю користувача, зразки його постів та правила. Імітуй цей стиль якомога точніше: тон, довжину, синтаксис, типову структуру речень, вибір лексики.
+Below is the user's style description, sample posts, and rules. Mimic this style as closely as possible: tone, length, syntax, typical sentence structure, word choice.
 
-=== ПОЧАТОК ОПИСУ СТИЛЮ ===
+=== STYLE DESCRIPTION START ===
 ${style}
-=== КІНЕЦЬ ОПИСУ СТИЛЮ ===
+=== STYLE DESCRIPTION END ===
 
-Важливо:
-- Пиши ВІД ПЕРШОЇ ОСОБИ
-- Природний голос, як у зразках вище
-- Конкретна реакція або думка, а не переказ новини
-- Українською
-- БЕЗ вступів типу "Ось пост:" чи "Ось мій варіант:" — починай одразу з тексту поста
-- Без хештегів, якщо інакше не сказано у стилі`;
+Important:
+- Write in FIRST PERSON
+- Natural voice, matching the samples above
+- A specific reaction or opinion, not a retelling of the news
+- Language: Ukrainian
+- NO preambles like "Here's a post:" or "Here's my version:" — start immediately with the post text
+- No hashtags unless the style dictates otherwise`;
 }
 
 export class PostGeneratorError extends Error {
@@ -48,7 +48,7 @@ export class PostGenerator {
       const style = await this.loadStyle();
       const systemPrompt = buildSystemPrompt(style);
 
-      const userMessage = `Новина:\nЗаголовок: ${item.title}\nОпис: ${item.description}\nДжерело: ${item.source}\n\nНапиши про це пост у моєму стилі.`;
+      const userMessage = `News article:\nTitle: ${item.title}\nDescription: ${item.description}\nSource: ${item.source}\n\nWrite a post about this in my style.`;
 
       const response = await this.client.messages.create({
         model: this.model,

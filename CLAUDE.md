@@ -116,8 +116,8 @@ export class RssFetcher {
 - [x] `data/mockNews.json` — mock items for offline development
 - [x] `src/ingestion/inoreaderFetcher.ts` — real Inoreader API client with 401 auto-refresh, HTML stripping, field mapping; replaces MockFetcher in pipeline
 - [x] `src/ingestion/embedder.ts` — Voyage voyage-3-lite, batch embed, query/document input types
-- [x] `src/retrieval/userProfile.ts` — static profile text + embedding helper
-- [x] `src/retrieval/searcher.ts` — cosine similarity, returns top K scored items
+- [x] `src/retrieval/userProfile.ts` — static profile text + embedding helper; negative interests include job/recruitment content
+- [x] `src/retrieval/searcher.ts` — cosine similarity, MIN_SCORE 0.75 threshold filter, returns top K scored items
 - [x] `src/generation/summarizer.ts` — Claude claude-sonnet-4-5, Ukrainian digest prompt
 - [x] `src/pipeline.ts` — orchestrates fetch → embed → search → summarize → save-to-store → telegram-deliver; takes store/telegram deps; returns digest string
 - [x] `src/store/articleStore.ts` — in-memory Map<id, NewsItem>, save/getById

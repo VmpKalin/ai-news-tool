@@ -17,6 +17,9 @@ I am NOT interested in:
 - General world news, human interest stories
 - Health, medicine (unless health tech)
 - War coverage (unless Ukrainian tech sector impact)
+- Job postings, vacancies, hiring announcements, career opportunities
+- "we are hiring", "join our team", "open positions", "job opening"
+- Recruitment content, HR announcements
 `;
 
 export async function getUserProfileEmbedding(embedder: Embedder): Promise<number[]> {

@@ -1,16 +1,20 @@
 import cron, { type ScheduledTask } from 'node-cron';
-import { runOnce } from './runState.js';
+import { runOnce, runBothPipelines } from './runState.js';
 
 export type PipelineRunner = () => Promise<string>;
 
 export class Scheduler {
   private task: ScheduledTask | null = null;
+  private readonly clusterRunner: PipelineRunner | null;
 
   constructor(
     private readonly expression: string,
     private readonly timezone: string,
     private readonly runner: PipelineRunner,
-  ) {}
+    clusterRunner?: PipelineRunner,
+  ) {
+    this.clusterRunner = clusterRunner ?? null;
+  }
 
   start(): void {
     try {
@@ -21,8 +25,10 @@ export class Scheduler {
       this.task = cron.schedule(
         this.expression,
         async () => {
-          console.log('[Scheduler] Cron tick — triggering pipeline');
-          const result = await runOnce(this.runner);
+          console.log('[Scheduler] Cron tick — triggering pipelines');
+          const result = this.clusterRunner
+            ? await runBothPipelines(this.runner, this.clusterRunner)
+            : await runOnce(this.runner);
           if (result.status === 'already_running') {
             console.log('[Scheduler] Skipped — previous run still in progress');
           } else if (result.status === 'error') {

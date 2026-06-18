@@ -78,40 +78,60 @@ export class TelegramDelivery {
     this.bot.command('help', async (ctx) => {
       if (String(ctx.chat.id) !== this.chatId) return;
       await ctx.reply(
-        '📋 Команди:\n/updates — запустити дайджест вручну\n/status — показати поточний стан\n/help — показати цю довідку',
+        '📋 Команди:\n/updates — запустити дайджест вручну\n/cluster — запустити дайджест IT кластера\n/status — показати поточний стан\n/help — показати цю довідку',
       );
     });
 
     console.log('[TelegramDelivery] Commands registered: /updates /status /help');
   }
 
+  registerClusterCommand(runner: PipelineRunner): void {
+    this.bot.command('cluster', async (ctx) => {
+      if (String(ctx.chat.id) !== this.chatId) return;
+      await ctx.reply('⏳ Запускаю дайджест для IT кластера...');
+      const result = await runOnce(runner);
+      if (result.status === 'ok') {
+        await ctx.reply('✅ Дайджест IT кластера готовий!');
+      } else if (result.status === 'already_running') {
+        await ctx.reply('⏳ Дайджест вже виконується, зачекай...');
+      } else {
+        await ctx.reply(`❌ Помилка: ${result.error}`);
+      }
+    });
+    console.log('[TelegramDelivery] Cluster command registered: /cluster');
+  }
+
   async sendDigest(items: NewsItem[]): Promise<void> {
+    await this.sendDigestToChat(items, this.chatId);
+  }
+
+  async sendDigestToChat(items: NewsItem[], chatId: string): Promise<void> {
     if (items.length === 0) {
       console.log('[TelegramDelivery] No items to send');
       return;
     }
-    console.log(`[TelegramDelivery] Sending ${items.length} items to chat ${this.chatId}`);
+    console.log(`[TelegramDelivery] Sending ${items.length} items to chat ${chatId}`);
     for (const item of items) {
       try {
-        await this.sendItem(item);
+        await this.sendItem(item, chatId);
       } catch (cause) {
         console.error(`[TelegramDelivery] Failed to send item ${item.id}`, cause);
       }
     }
     try {
-      await this.sendHeadlines(items);
+      await this.sendHeadlines(items, chatId);
     } catch (cause) {
       console.error('[TelegramDelivery] Failed to send headlines summary', cause);
     }
   }
 
-  private async sendHeadlines(items: NewsItem[]): Promise<void> {
+  private async sendHeadlines(items: NewsItem[], chatId: string): Promise<void> {
     const lines = items.map(
       (item, idx) =>
         `${idx + 1}. <a href="${escapeHtmlAttr(item.url)}">${escapeHtml(item.title)}</a>`,
     );
     const text = `📰 <b>Усі новини сьогодні (${items.length}):</b>\n\n${lines.join('\n')}`;
-    await this.bot.telegram.sendMessage(this.chatId, text, {
+    await this.bot.telegram.sendMessage(chatId, text, {
       parse_mode: 'HTML',
       link_preview_options: { is_disabled: true },
       reply_markup: {
@@ -120,10 +140,10 @@ export class TelegramDelivery {
     });
   }
 
-  private async sendItem(item: NewsItem): Promise<void> {
+  private async sendItem(item: NewsItem, chatId: string): Promise<void> {
     const text = formatMessage(item);
     const alias = articleAlias(item.id);
-    await this.bot.telegram.sendMessage(this.chatId, text, {
+    await this.bot.telegram.sendMessage(chatId, text, {
       parse_mode: 'Markdown',
       link_preview_options: { is_disabled: true },
       reply_markup: {

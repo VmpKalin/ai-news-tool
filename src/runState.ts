@@ -105,6 +105,61 @@ export async function runOnce(runner: () => Promise<string>): Promise<RunResult>
   }
 }
 
+export async function runBothPipelines(
+  personalRunner: () => Promise<string>,
+  clusterRunner: () => Promise<string>,
+): Promise<RunResult> {
+  if (isRunning) {
+    console.log('[RunState] Skipped — pipeline already running');
+    return { status: 'already_running' };
+  }
+
+  isRunning = true;
+  const startedAt = new Date();
+  const digests: string[] = [];
+
+  try {
+    console.log('[RunState] Running personal pipeline...');
+    const personalDigest = await personalRunner();
+    digests.push(personalDigest);
+
+    console.log('[RunState] Running cluster pipeline...');
+    try {
+      const clusterDigest = await clusterRunner();
+      digests.push(clusterDigest);
+    } catch (cause) {
+      console.error('[RunState] Cluster pipeline failed, personal pipeline succeeded:', cause);
+    }
+
+    const finishedAt = new Date();
+    const combinedDigest = digests.join('\n\n---\n\n');
+    latestDigest = combinedDigest;
+    lastRun = {
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      durationMs: finishedAt.getTime() - startedAt.getTime(),
+      success: true,
+    };
+    await persistState();
+    return { status: 'ok', digest: combinedDigest };
+  } catch (cause) {
+    const finishedAt = new Date();
+    const errorMessage = cause instanceof Error ? cause.message : String(cause);
+    lastRun = {
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      durationMs: finishedAt.getTime() - startedAt.getTime(),
+      success: false,
+      error: errorMessage,
+    };
+    await persistLastRun();
+    console.error('[RunState] Pipelines failed:', errorMessage);
+    return { status: 'error', error: errorMessage };
+  } finally {
+    isRunning = false;
+  }
+}
+
 async function persistState(): Promise<void> {
   if (latestDigest !== null) {
     try {

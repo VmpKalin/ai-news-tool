@@ -21,6 +21,8 @@ export interface AppConfig {
   readonly fetchMaxArticles: number;
   readonly inoreaderFolders: readonly string[];
   readonly discordWebhookUrl: string | null;
+  readonly clusterTelegramChatId: string | null;
+  readonly clusterInoreaderFolders: readonly string[];
 }
 
 function requireEnv(name: string): string {
@@ -79,4 +81,6 @@ export const config: AppConfig = {
   fetchMaxArticles: optionalIntEnv('FETCH_MAX_ARTICLES', 50, 1),
   inoreaderFolders: optionalListEnv('INOREADER_FOLDERS', ['AI']),
   discordWebhookUrl: process.env.DISCORD_WEBHOOK_URL?.trim() || null,
+  clusterTelegramChatId: process.env.CLUSTER_TELEGRAM_CHAT_ID?.trim() || null,
+  clusterInoreaderFolders: optionalListEnv('CLUSTER_INOREADER_FOLDERS', ['Germany-IT']),
 };

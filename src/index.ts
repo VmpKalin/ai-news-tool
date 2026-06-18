@@ -9,7 +9,7 @@ import { ArticleAnalyzer } from './generation/articleAnalyzer.js';
 import { PostGenerator } from './generation/postGenerator.js';
 import { TelegramDelivery } from './delivery/telegram.js';
 import { CallbackHandler } from './delivery/callbackHandler.js';
-import { createPipelineRunner } from './pipeline.js';
+import { createPipelineRunner, createClusterPipelineRunner } from './pipeline.js';
 
 async function main(): Promise<void> {
   initErrorReporter();
@@ -30,7 +30,16 @@ async function main(): Promise<void> {
 
   const runner = createPipelineRunner({ store, telegram });
 
-  const scheduler = new Scheduler(config.cronSchedule, config.timezone, runner);
+  const clusterRunner = config.clusterTelegramChatId
+    ? createClusterPipelineRunner({ store, telegram, chatId: config.clusterTelegramChatId })
+    : null;
+
+  const scheduler = new Scheduler(
+    config.cronSchedule,
+    config.timezone,
+    runner,
+    clusterRunner ?? undefined,
+  );
   const server = new HttpServer({
     port: config.port,
     triggerToken: config.triggerToken,
@@ -40,6 +49,9 @@ async function main(): Promise<void> {
 
   await telegram.launch();
   telegram.registerCommands(runner, () => scheduler.getNextRun());
+  if (clusterRunner) {
+    telegram.registerClusterCommand(clusterRunner);
+  }
   scheduler.start();
   await server.start();
 

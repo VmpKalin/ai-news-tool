@@ -4,7 +4,9 @@ import { ArticleValidator } from './ingestion/articleValidator.js';
 import { Embedder } from './ingestion/embedder.js';
 import { Searcher } from './retrieval/searcher.js';
 import { getUserProfileEmbedding } from './retrieval/userProfile.js';
+import { getClusterProfileEmbedding } from './retrieval/clusterProfile.js';
 import { Summarizer } from './generation/summarizer.js';
+import { ClusterSummarizer } from './generation/clusterSummarizer.js';
 import { ArticleTranslator } from './generation/articleTranslator.js';
 import type { NewsItem } from './models/NewsItem.js';
 import type { ArticleStore } from './store/articleStore.js';
@@ -15,10 +17,21 @@ export interface PipelineDeps {
   readonly telegram: TelegramDelivery;
 }
 
+export interface ClusterPipelineDeps {
+  readonly store: ArticleStore;
+  readonly telegram: TelegramDelivery;
+  readonly chatId: string;
+}
+
 const FETCH_ATTEMPTS = 2;
+const CLUSTER_TOP_K = 5;
 
 export function createPipelineRunner(deps: PipelineDeps): () => Promise<string> {
   return () => runPipeline(deps);
+}
+
+export function createClusterPipelineRunner(deps: ClusterPipelineDeps): () => Promise<string> {
+  return () => runClusterPipeline(deps);
 }
 
 export async function runPipeline(deps: PipelineDeps): Promise<string> {
@@ -86,6 +99,75 @@ export async function runPipeline(deps: PipelineDeps): Promise<string> {
     return digest;
   } catch (cause) {
     console.error(`[Pipeline] Failed after ${elapsed(pipelineStart)}s`, cause);
+    throw cause;
+  }
+}
+
+export async function runClusterPipeline(deps: ClusterPipelineDeps): Promise<string> {
+  const pipelineStart = Date.now();
+
+  try {
+    const fetcher = new InoreaderFetcher(
+      {
+        appId: config.inoreaderAppId,
+        appSecret: config.inoreaderAppSecret,
+        accessToken: config.inoreaderAccessToken,
+        refreshToken: config.inoreaderRefreshToken,
+      },
+      {
+        windowHours: config.fetchWindowHours,
+        maxArticles: config.fetchMaxArticles,
+        folders: config.clusterInoreaderFolders,
+      },
+    );
+    const validator = new ArticleValidator();
+    const embedder = new Embedder(config.voyageApiKey, config.embeddingModel);
+    const searcher = new Searcher(CLUSTER_TOP_K);
+    const translator = new ArticleTranslator(config.anthropicApiKey, config.summaryModel);
+    const summarizer = new ClusterSummarizer(config.anthropicApiKey, config.summaryModel);
+
+    const step1Start = Date.now();
+    const validItems = await fetchAndValidateWithRetry(fetcher, validator, deps.store);
+    console.log(`[ClusterPipeline] Step 1 (fetch + validate) done in ${elapsed(step1Start)}s`);
+
+    if (validItems.length === 0) {
+      console.log('[ClusterPipeline] No valid articles after filtering, skipping');
+      return 'Немає нових статей для IT кластера.';
+    }
+
+    const step2Start = Date.now();
+    const vectorized = await embedder.embedItems(validItems);
+    console.log(`[ClusterPipeline] Step 2 (embed news) done in ${elapsed(step2Start)}s`);
+
+    const step3Start = Date.now();
+    const profileVector = await getClusterProfileEmbedding(embedder);
+    console.log(`[ClusterPipeline] Step 3 (embed profile) done in ${elapsed(step3Start)}s`);
+
+    const step4Start = Date.now();
+    const topItems = searcher.search(vectorized, profileVector);
+    console.log(`[ClusterPipeline] Step 4 (search) done in ${elapsed(step4Start)}s`);
+
+    const step5Start = Date.now();
+    const translated = await translator.translateBatch(topItems);
+    console.log(`[ClusterPipeline] Step 5 (translate) done in ${elapsed(step5Start)}s`);
+
+    const step6Start = Date.now();
+    const digest = await summarizer.summarize(translated);
+    console.log(`[ClusterPipeline] Step 6 (summarize) done in ${elapsed(step6Start)}s`);
+
+    const step7Start = Date.now();
+    await deps.store.save(translated);
+    await deps.telegram.sendDigestToChat(translated, deps.chatId);
+    await deps.store.markManyAsSent(translated.map((item) => item.id));
+    console.log(`[ClusterPipeline] Step 7 (deliver + mark sent) done in ${elapsed(step7Start)}s`);
+
+    console.log(`\n[ClusterPipeline] Total time: ${elapsed(pipelineStart)}s\n`);
+    console.log('===== CLUSTER NEWS DIGEST =====\n');
+    console.log(digest);
+    console.log('\n===============================');
+    return digest;
+  } catch (cause) {
+    console.error(`[ClusterPipeline] Failed after ${elapsed(pipelineStart)}s`, cause);
     throw cause;
   }
 }

@@ -142,4 +142,12 @@ export class RssFetcher {
 - [x] `src/ingestion/articleValidator.ts` — filters invalid articles (Medium teasers, Reddit metadata, timecodes-only, empty/short descriptions) with aggregated stats
 - [x] `src/ingestion/inoreaderFetcher.ts` — added optional `{ windowHours, maxArticles }` overrides to fetch() for retry logic
 - [x] `src/pipeline.ts` — new validate step after dedup + `fetchAndValidateWithRetry` helper with up to 2x fetch attempts with widened window if < TOP_K
+- [x] `src/retrieval/clusterProfile.ts` — German/EU IT profile text + embedding helper for cluster pipeline
+- [x] `src/generation/clusterSummarizer.ts` — Claude summarizer with Ukrainian prompt targeting German/EU IT scene
+- [x] `src/pipeline.ts` — added `runClusterPipeline()` + `createClusterPipelineRunner()` for IT cluster channel
+- [x] `src/config.ts` — added `clusterTelegramChatId` and `clusterInoreaderFolders` config fields
+- [x] `src/runState.ts` — added `runBothPipelines()` to run personal + cluster sequentially with shared mutex
+- [x] `src/scheduler.ts` — optional cluster runner, cron tick runs both pipelines via `runBothPipelines()`
+- [x] `src/delivery/telegram.ts` — added `sendDigestToChat()`, `/cluster` command, parameterized chatId in send methods
+- [x] `src/index.ts` — wires up cluster pipeline when `CLUSTER_TELEGRAM_CHAT_ID` is set
 - [x] `npm run build` — compiles cleanly, no type errors

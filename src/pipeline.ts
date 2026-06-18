@@ -53,7 +53,7 @@ export async function runPipeline(deps: PipelineDeps): Promise<string> {
     );
     const validator = new ArticleValidator();
     const embedder = new Embedder(config.voyageApiKey, config.embeddingModel);
-    const searcher = new Searcher(config.topK);
+    const searcher = new Searcher(config.topK, config.minScore);
     const translator = new ArticleTranslator(config.anthropicApiKey, config.summaryModel);
     const summarizer = new Summarizer(config.anthropicApiKey, config.summaryModel);
 
@@ -122,7 +122,7 @@ export async function runClusterPipeline(deps: ClusterPipelineDeps): Promise<str
     );
     const validator = new ArticleValidator();
     const embedder = new Embedder(config.voyageApiKey, config.embeddingModel);
-    const searcher = new Searcher(CLUSTER_TOP_K);
+    const searcher = new Searcher(CLUSTER_TOP_K, config.clusterMinScore);
     const translator = new ArticleTranslator(config.anthropicApiKey, config.summaryModel);
     const summarizer = new ClusterSummarizer(config.anthropicApiKey, config.summaryModel);
 

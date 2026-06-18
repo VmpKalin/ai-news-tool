@@ -23,6 +23,8 @@ export interface AppConfig {
   readonly discordWebhookUrl: string | null;
   readonly clusterTelegramChatId: string | null;
   readonly clusterInoreaderFolders: readonly string[];
+  readonly minScore: number;
+  readonly clusterMinScore: number;
 }
 
 function requireEnv(name: string): string {
@@ -45,6 +47,18 @@ function optionalIntEnv(name: string, fallback: number, min: number): number {
   if (Number.isNaN(parsed) || parsed < min) {
     throw new Error(
       `[config] Invalid ${name}: expected integer >= ${min}, got "${raw}"`,
+    );
+  }
+  return parsed;
+}
+
+function optionalFloatEnv(name: string, fallback: number, min: number, max: number): number {
+  const raw = process.env[name];
+  if (!raw || raw.trim().length === 0) return fallback;
+  const parsed = parseFloat(raw);
+  if (Number.isNaN(parsed) || parsed < min || parsed > max) {
+    throw new Error(
+      `[config] Invalid ${name}: expected float ${min}..${max}, got "${raw}"`,
     );
   }
   return parsed;
@@ -83,4 +97,6 @@ export const config: AppConfig = {
   discordWebhookUrl: process.env.DISCORD_WEBHOOK_URL?.trim() || null,
   clusterTelegramChatId: process.env.CLUSTER_TELEGRAM_CHAT_ID?.trim() || null,
   clusterInoreaderFolders: optionalListEnv('CLUSTER_INOREADER_FOLDERS', ['Germany-IT']),
+  minScore: optionalFloatEnv('MIN_SCORE', 0.75, 0, 1),
+  clusterMinScore: optionalFloatEnv('CLUSTER_MIN_SCORE', 0.55, 0, 1),
 };

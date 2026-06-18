@@ -117,7 +117,7 @@ export class RssFetcher {
 - [x] `src/ingestion/inoreaderFetcher.ts` — real Inoreader API client with 401 auto-refresh, HTML stripping, field mapping; replaces MockFetcher in pipeline
 - [x] `src/ingestion/embedder.ts` — Voyage voyage-3-lite, batch embed, query/document input types
 - [x] `src/retrieval/userProfile.ts` — static profile text + embedding helper; negative interests include job/recruitment content
-- [x] `src/retrieval/searcher.ts` — cosine similarity, MIN_SCORE 0.75 threshold filter, returns top K scored items
+- [x] `src/retrieval/searcher.ts` — cosine similarity, configurable minScore per instance, returns top K scored items
 - [x] `src/generation/summarizer.ts` — Claude claude-sonnet-4-5, Ukrainian digest prompt
 - [x] `src/pipeline.ts` — orchestrates fetch → embed → search → summarize → save-to-store → telegram-deliver; takes store/telegram deps; returns digest string
 - [x] `src/store/articleStore.ts` — in-memory Map<id, NewsItem>, save/getById
@@ -142,10 +142,10 @@ export class RssFetcher {
 - [x] `src/ingestion/articleValidator.ts` — filters invalid articles (Medium teasers, Reddit metadata, timecodes-only, empty/short descriptions) with aggregated stats
 - [x] `src/ingestion/inoreaderFetcher.ts` — added optional `{ windowHours, maxArticles }` overrides to fetch() for retry logic
 - [x] `src/pipeline.ts` — new validate step after dedup + `fetchAndValidateWithRetry` helper with up to 2x fetch attempts with widened window if < TOP_K
-- [x] `src/retrieval/clusterProfile.ts` — German/EU IT profile text + embedding helper for cluster pipeline
+- [x] `src/retrieval/clusterProfile.ts` — bilingual (EN+DE) IT profile text + embedding helper for cluster pipeline
 - [x] `src/generation/clusterSummarizer.ts` — Claude summarizer with Ukrainian prompt targeting German/EU IT scene
 - [x] `src/pipeline.ts` — added `runClusterPipeline()` + `createClusterPipelineRunner()` for IT cluster channel
-- [x] `src/config.ts` — added `clusterTelegramChatId` and `clusterInoreaderFolders` config fields
+- [x] `src/config.ts` — added `clusterTelegramChatId`, `clusterInoreaderFolders`, `minScore` (0.75), `clusterMinScore` (0.55)
 - [x] `src/runState.ts` — added `runBothPipelines()` to run personal + cluster sequentially with shared mutex
 - [x] `src/scheduler.ts` — optional cluster runner, cron tick runs both pipelines via `runBothPipelines()`
 - [x] `src/delivery/telegram.ts` — added `sendDigestToChat()`, `/cluster` command, parameterized chatId in send methods

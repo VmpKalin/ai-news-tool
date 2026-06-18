@@ -1,13 +1,14 @@
 import type { NewsItemWithVector, ScoredNewsItem } from '../models/NewsItem.js';
 
-const MIN_SCORE = 0.75;
-
 export class Searcher {
-  constructor(private readonly topK: number) {}
+  constructor(
+    private readonly topK: number,
+    private readonly minScore: number,
+  ) {}
 
   search(items: NewsItemWithVector[], profileVector: number[]): ScoredNewsItem[] {
     try {
-      console.log(`[Searcher] Scoring ${items.length} items, returning top ${this.topK}`);
+      console.log(`[Searcher] Scoring ${items.length} items, returning top ${this.topK} (minScore=${this.minScore})`);
 
       const scored: ScoredNewsItem[] = items.map(({ vector, ...rest }) => ({
         ...rest,
@@ -15,8 +16,8 @@ export class Searcher {
       }));
 
       scored.sort((a, b) => b.score - a.score);
-      const filtered = scored.filter(item => item.score >= MIN_SCORE);
-      console.log(`[Searcher] ${filtered.length}/${scored.length} items above MIN_SCORE ${MIN_SCORE}`);
+      const filtered = scored.filter(item => item.score >= this.minScore);
+      console.log(`[Searcher] ${filtered.length}/${scored.length} items above minScore ${this.minScore}`);
       return filtered.slice(0, this.topK);
     } catch (cause) {
       console.error('[Searcher] Similarity search failed', cause);
